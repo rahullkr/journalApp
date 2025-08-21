@@ -7,5 +7,6 @@ import com.journalapp.journalapp.entity.UserEntry;
 
 public interface UserRepo extends MongoRepository<UserEntry, ObjectId> {
     // Define custom query methods if needed
+    UserEntry findByUserName(String userName);
 
 }
