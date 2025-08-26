@@ -17,19 +17,21 @@ import com.journalapp.journalapp.repository.UserRepo;
 public class UserEntryService {
         @Autowired
         private UserRepo userRepo;  
-        private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();     
+        private static final PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();    
+
         public void saveEntry(UserEntry user){
                  user.setPassword(passwordEncoder.encode(user.getPassword()));
                  user.setRoles(Arrays.asList("USER"));
-                // passwordEncoder.encode(user.getPassword());
                 userRepo.save(user);
         }
-        // public void saveNewUser(UserEntry user){
-              
-        //         userRepo.save(user);
-
-        // }
-
+        public void saveUser(UserEntry user){
+                userRepo.save(user);
+        }
+        public void saveAdmin(UserEntry user){
+                user.setPassword(passwordEncoder.encode(user.getPassword()));
+                 user.setRoles(Arrays.asList("USER", "ADMIN"));
+                userRepo.save(user);
+        }
         public List<UserEntry> getAll() {return userRepo.findAll();}
         public Optional<UserEntry> findById(ObjectId id) {return userRepo.findById(id);}
         public void deleteById(ObjectId id) {userRepo.deleteById(id);}

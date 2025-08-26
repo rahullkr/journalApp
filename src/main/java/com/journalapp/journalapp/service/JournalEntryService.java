@@ -23,22 +23,20 @@ public class JournalEntryService {
     @Transactional
     public void saveEntry(JournalEntry journalEntry, String userName) {
         try {
-            
-       
-        UserEntry user = userEntryService.findByUserName(userName);
-      
-        JournalEntry saved =  journalEntryRepo.save(journalEntry);
-        user.getJournalEntries().add(saved);
-        userEntryService.saveEntry(user);
-         } catch (Exception e) {
+
+            UserEntry user = userEntryService.findByUserName(userName);
+            JournalEntry saved = journalEntryRepo.save(journalEntry);
+            user.getJournalEntries().add(saved);
+            userEntryService.saveUser(user);
+        } catch (Exception e) {
             System.out.println(e.getMessage());
             throw new RuntimeException(e.getMessage());
         }
     }
+
     public void saveEntry(JournalEntry journalEntry) {
         journalEntryRepo.save(journalEntry);
     }
-
 
     public List<JournalEntry> getAll() {
         return journalEntryRepo.findAll();
@@ -47,13 +45,16 @@ public class JournalEntryService {
     public Optional<JournalEntry> getById(ObjectId id) {
         return journalEntryRepo.findById(id);
     }
-
+    @Transactional
     public void deleteById(ObjectId id, String userName) {
         UserEntry user = userEntryService.findByUserName(userName);
-        user.getJournalEntries().removeIf(entry -> entry.getId().equals(id));
-        userEntryService.saveEntry(user);
+        boolean removed = user.getJournalEntries().removeIf(entry -> entry.getId().equals(id));
+        if(removed){
+            userEntryService.saveUser(user);
         journalEntryRepo.deleteById(id);
-    
+        }
+        
+
     }
 
     public JournalEntry updateById(ObjectId id, JournalEntry updatedEntry) {
@@ -63,5 +64,10 @@ public class JournalEntryService {
             entry.setDate(updatedEntry.getDate());
             return journalEntryRepo.save(entry);
         }).orElse(null);
+    }
+
+    public List<JournalEntry> findByUserName(String userName) {
+        UserEntry user = userEntryService.findByUserName(userName);
+        return user.getJournalEntries();
     }
 }
