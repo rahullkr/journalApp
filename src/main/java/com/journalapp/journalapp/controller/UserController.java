@@ -15,45 +15,62 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.journalapp.journalapp.apiresponse.WeatherResponse;
 import com.journalapp.journalapp.entity.UserEntry;
 import com.journalapp.journalapp.repository.UserRepo;
 import com.journalapp.journalapp.service.UserEntryService;
+import com.journalapp.journalapp.service.WeatherService;
+
 @RestController
 @RequestMapping("/user")
 public class UserController {
-@Autowired
-private UserEntryService userEntryService;
+    @Autowired
+    private UserEntryService userEntryService;
 
-@Autowired
-private UserRepo userRepo;  
+    @Autowired
+    private UserRepo userRepo;
 
-@GetMapping
+    @Autowired
+    private WeatherService weatherService;
 
-public List<UserEntry> getAllUsers(){
-    return userEntryService.getAll();
-}
+    @GetMapping
 
-
-@PutMapping
-public ResponseEntity<?> updateUser(@RequestBody UserEntry user) {
-
-    //first get the user 
-    Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-    String userName = authentication.getName();
-    UserEntry existingUser = userEntryService.findByUserName(userName);
-    if (existingUser != null) {
-        existingUser.setUserName(user.getUserName());
-        existingUser.setPassword(user.getPassword());
-        userEntryService.saveEntry(existingUser); 
+    public List<UserEntry> getAllUsers() {
+        return userEntryService.getAll();
     }
+
+    @GetMapping("/weathering")
+    public ResponseEntity<?> greeting() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        WeatherResponse weatherResponse = weatherService.getcity("Mumbai");
+        String greeting  = "";
+        if(weatherResponse != null){
+            greeting = "Weather feels like " + weatherResponse.getCurrent().getFeelslike();
+        }
+        String userName = authentication.getName();
+        return new ResponseEntity<>(userName + greeting, HttpStatus.OK);
+    }
+
+    @PutMapping
+    public ResponseEntity<?> updateUser(@RequestBody UserEntry user) {
+
+        // first get the user
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String userName = authentication.getName();
+        UserEntry existingUser = userEntryService.findByUserName(userName);
+        if (existingUser != null) {
+            existingUser.setUserName(user.getUserName());
+            existingUser.setPassword(user.getPassword());
+            userEntryService.saveEntry(existingUser);
+        }
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-}
-@DeleteMapping 
-public ResponseEntity<?> deleteUserById() {
-     Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-     userRepo.deleteByUserName(authentication.getName());
-return new ResponseEntity<>(HttpStatus.NO_CONTENT);
-}
+    }
+
+    @DeleteMapping
+    public ResponseEntity<?> deleteUserById() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        userRepo.deleteByUserName(authentication.getName());
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+    }
 
 }
-
