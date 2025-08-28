@@ -17,7 +17,7 @@ import com.journalapp.journalapp.cache.AppCache;
 @Component
 public class WeatherService {
     @Value("${weather_api_key}")
-    private static String apikey ;
+    private String apikey ;
 
     @Autowired
     private RestTemplate restTemplate;
